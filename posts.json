@@ -1,0 +1,26 @@
+[
+    {
+        "id": "first-post",
+        "title": "Welcome to My Blog",
+        "date": "2026-05-23",
+        "excerpt": "Hello and welcome to my new blog! This is the first post where I'll share my thoughts and experiences.",
+        "author": "Richard Wang",
+        "tags": ["welcome", "intro", "blog"]
+    },
+    {
+        "id": "web-development-tips",
+        "title": "5 Web Development Tips for Beginners",
+        "date": "2026-05-20",
+        "excerpt": "Starting your journey in web development? Here are five essential tips to help you succeed.",
+        "author": "Richard Wang",
+        "tags": ["web development", "tips", "programming"]
+    },
+    {
+        "id": "productivity-hacks",
+        "title": "Productivity Hacks That Actually Work",
+        "date": "2026-05-15",
+        "excerpt": "Discover practical productivity techniques that can help you accomplish more in less time.",
+        "author": "Richard Wang",
+        "tags": ["productivity", "tips", "lifestyle"]
+    }
+]

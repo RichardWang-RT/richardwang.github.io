@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's New | Update to my recent</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+    <main>
+        <section class="hero">
+            <h2>What's New</h2>
+            <p style="color: gray;">Updates on my recent work, discussion of open problems</p>
+        </section>
+
+        <header>
+            <nav>
+                <ul>
+                    <li><a href="#" id="home-link" onclick="event.preventDefault(); showPosts();">Home</a></li>
+                    <li><a href="#" id="about-link" onclick="event.preventDefault(); toggleSection('about-content');">About</a></li>
+                    <li><a href="#" id="books-link" onclick="event.preventDefault(); toggleSection('books-content');">Books</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <section class="home-content" id="about-content" style="display: none;">
+            <h2>About</h2>
+            <div id="about-display" style="padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; min-height: 120px; font-family: 'Georgia', serif; font-size: 0.9rem; white-space: pre-wrap;"></div>
+            <div id="about-editor" style="display: none;">
+                <textarea id="about-textarea" rows="6" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Georgia', serif; font-size: 0.9rem; resize: vertical;"></textarea>
+                <button onclick="saveEdit('about')" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer;">Save</button>
+            </div>
+            <button class="edit-btn" onclick="unlockEdit('about')" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer; display: none;">Edit</button>
+        </section>
+
+        <section class="home-content" id="books-content" style="display: none;">
+            <h2>Books</h2>
+            <div id="books-display" style="padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; min-height: 120px; font-family: 'Georgia', serif; font-size: 0.9rem; white-space: pre-wrap;"></div>
+            <div id="books-editor" style="display: none;">
+                <textarea id="books-textarea" rows="6" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Georgia', serif; font-size: 0.9rem; resize: vertical;"></textarea>
+                <button onclick="saveEdit('books')" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer;">Save</button>
+            </div>
+            <button class="edit-btn" onclick="unlockEdit('books')" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer; display: none;">Edit</button>
+        </section>
+
+        <section class="posts-grid" id="posts-container">
+            <!-- Posts will be dynamically loaded here -->
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2026 Richard Wang. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        var EDIT_PASSWORD_HASH = '6473c19b9ef05f6f1a48ed130398ca30beba1542087877140f9d6f43411dc32d';
+
+        // Show edit buttons only with secret key
+        var ADMIN_KEY = 'Wrt19960817';
+
+        // Load saved content on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === ADMIN_KEY) {
+                var btns = document.querySelectorAll('.edit-btn');
+                btns.forEach(function(btn) { btn.style.display = ''; });
+            }
+
+            ['about', 'books'].forEach(function(name) {
+                var text = localStorage.getItem(name + '-content');
+                if (text) {
+                    document.getElementById(name + '-display').textContent = text;
+                    document.getElementById(name + '-textarea').value = text;
+                }
+            });
+        });
+
+        async function sha256(message) {
+            var msgBuffer = new TextEncoder().encode(message);
+            var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            var hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        async function unlockEdit(name) {
+            var password = prompt('Enter password to edit:');
+            if (!password) return;
+            var hash = await sha256(password);
+            if (hash === EDIT_PASSWORD_HASH) {
+                document.getElementById(name + '-display').style.display = 'none';
+                document.getElementById(name + '-editor').style.display = '';
+                document.getElementById(name + '-textarea').focus();
+            } else {
+                alert('Wrong password.');
+            }
+        }
+
+        function saveEdit(name) {
+            var value = document.getElementById(name + '-textarea').value;
+            localStorage.setItem(name + '-content', value);
+            document.getElementById(name + '-display').textContent = value;
+            document.getElementById(name + '-display').style.display = '';
+            document.getElementById(name + '-editor').style.display = 'none';
+        }
+
+        function showPosts() {
+            var sections = ['about-content', 'books-content'];
+            sections.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
+            document.getElementById('posts-container').style.display = '';
+        }
+
+        function toggleSection(sectionId) {
+            var sections = ['about-content', 'books-content'];
+            var posts = document.getElementById('posts-container');
+            var target = document.getElementById(sectionId);
+            if (!target) return;
+
+            if (target.style.display === 'none') {
+                sections.forEach(function(id) {
+                    var el = document.getElementById(id);
+                    if (el) el.style.display = 'none';
+                });
+                posts.style.display = 'none';
+                target.style.display = 'block';
+            } else {
+                target.style.display = 'none';
+                posts.style.display = '';
+            }
+        }
+    </script>
+    <script src="js/main.js"></script>
+</body>
+</html>
