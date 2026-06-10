@@ -21,20 +21,84 @@ function renderPosts(posts) {
     const container = document.getElementById('posts-container');
     if (!container) return;
 
-    container.innerHTML = posts.map(post => `
+    container.innerHTML = posts.map((post, index) => `
         <article class="post-card">
             <div class="post-card-content">
-                <h3><a href="post.html?id=${post.id}">${post.title}</a></h3>
-                <div class="post-meta">
-                    <span>${formatDate(post.date)}</span>
-                    <span>•</span>
-                    <span>${post.author}</span>
+                <div id="post-display-${index}" class="post-display">
+                    <p id="post-placeholder-${index}" style="color: #aaa; text-align: center; display: none;">Click edit to add content</p>
                 </div>
-                <p class="post-excerpt">${post.excerpt}</p>
-                <a href="post.html?id=${post.id}" class="read-more">Read more →</a>
+                <div id="post-editor-${index}" style="display: none;">
+                    <textarea id="post-textarea-${index}" rows="4" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 4px; font-family: 'Georgia', serif; font-size: 0.9rem; resize: vertical;"></textarea>
+                    <button onclick="savePostEdit(${index})" style="margin-top: 0.5rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; cursor: pointer;">Save</button>
+                </div>
+                <button class="edit-btn" onclick="unlockPostEdit(${index})" style="margin-top: 0.5rem; padding: 0.25rem 0.6rem; font-size: 0.75rem; cursor: pointer; display: none;">Edit</button>
             </div>
         </article>
     `).join('');
+
+    // Load saved content from localStorage
+    posts.forEach(function(_, index) {
+        var text = localStorage.getItem('post-frame-' + index);
+        if (text) {
+            var display = document.getElementById('post-display-' + index);
+            if (display) {
+                display.innerHTML = '<p style="white-space: pre-wrap; margin: 0;">' + escapeHtml(text) + '</p>';
+            }
+            var textarea = document.getElementById('post-textarea-' + index);
+            if (textarea) textarea.value = text;
+        }
+    });
+
+    // Show edit buttons and placeholder only when logged in
+    var isAdmin = sessionStorage.getItem('is-admin') === 'true';
+    if (isAdmin) {
+        var allBtns = document.querySelectorAll('.post-card .edit-btn');
+        allBtns.forEach(function(btn) { btn.style.display = ''; });
+        // Show placeholder hint on empty frames
+        posts.forEach(function(_, index) {
+            if (!localStorage.getItem('post-frame-' + index)) {
+                var ph = document.getElementById('post-placeholder-' + index);
+                if (ph) ph.style.display = '';
+            }
+        });
+    }
+}
+
+// Save post frame edit
+function savePostEdit(index) {
+    var value = document.getElementById('post-textarea-' + index).value;
+    var display = document.getElementById('post-display-' + index);
+    if (value) {
+        localStorage.setItem('post-frame-' + index, value);
+        if (display) {
+            display.innerHTML = '<p style="white-space: pre-wrap; margin: 0;">' + escapeHtml(value) + '</p>';
+        }
+    } else {
+        localStorage.removeItem('post-frame-' + index);
+        if (display) {
+            display.innerHTML = '<p id="post-placeholder-' + index + '" style="color: #aaa; text-align: center; display: none;">Click edit to add content</p>';
+        }
+    }
+    document.getElementById('post-display-' + index).style.display = '';
+    document.getElementById('post-editor-' + index).style.display = 'none';
+}
+
+// Unlock post frame edit
+function unlockPostEdit(index) {
+    if (sessionStorage.getItem('is-admin') === 'true') {
+        document.getElementById('post-display-' + index).style.display = 'none';
+        document.getElementById('post-editor-' + index).style.display = '';
+        document.getElementById('post-textarea-' + index).focus();
+    } else {
+        alert('Please click "Edit" in the nav to login first.');
+    }
+}
+
+// Simple HTML escape utility
+function escapeHtml(text) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
 }
 
 // Load single post

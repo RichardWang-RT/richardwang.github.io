@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>What's New | Update to my recent</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=2">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
@@ -21,6 +21,7 @@
                     <li><a href="#" id="home-link" onclick="event.preventDefault(); showPosts();">Home</a></li>
                     <li><a href="#" id="about-link" onclick="event.preventDefault(); toggleSection('about-content');">About</a></li>
                     <li><a href="#" id="books-link" onclick="event.preventDefault(); toggleSection('books-content');">Books</a></li>
+                    <li><a href="#" id="login-link" onclick="event.preventDefault(); loginAsAdmin();" style="font-size: 0.75rem; color: #999;">Edit</a></li>
                 </ul>
             </nav>
         </header>
@@ -58,16 +59,31 @@
 
     <script>
         var EDIT_PASSWORD_HASH = '6473c19b9ef05f6f1a48ed130398ca30beba1542087877140f9d6f43411dc32d';
-
-        // Show edit buttons only with secret key
         var ADMIN_KEY = 'Wrt19960817';
+
+        // Single login — prompt once, unlock all edits
+        async function loginAsAdmin() {
+            var password = prompt('Enter password:');
+            if (!password) return;
+            var hash = await sha256(password);
+            if (hash === EDIT_PASSWORD_HASH) {
+                sessionStorage.setItem('is-admin', 'true');
+                showAllEditButtons();
+            } else {
+                alert('Wrong password.');
+            }
+        }
+
+        function showAllEditButtons() {
+            var btns = document.querySelectorAll('.edit-btn');
+            btns.forEach(function(btn) { btn.style.display = ''; });
+        }
 
         // Load saved content on page load
         document.addEventListener('DOMContentLoaded', function() {
             var urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('admin') === ADMIN_KEY) {
-                var btns = document.querySelectorAll('.edit-btn');
-                btns.forEach(function(btn) { btn.style.display = ''; });
+            if (urlParams.get('admin') === ADMIN_KEY || sessionStorage.getItem('is-admin') === 'true') {
+                showAllEditButtons();
             }
 
             ['about', 'books'].forEach(function(name) {
@@ -86,16 +102,13 @@
             return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
         }
 
-        async function unlockEdit(name) {
-            var password = prompt('Enter password to edit:');
-            if (!password) return;
-            var hash = await sha256(password);
-            if (hash === EDIT_PASSWORD_HASH) {
+        function unlockEdit(name) {
+            if (sessionStorage.getItem('is-admin') === 'true') {
                 document.getElementById(name + '-display').style.display = 'none';
                 document.getElementById(name + '-editor').style.display = '';
                 document.getElementById(name + '-textarea').focus();
             } else {
-                alert('Wrong password.');
+                alert('Please click "Edit" in the nav to login first.');
             }
         }
 
@@ -135,6 +148,6 @@
             }
         }
     </script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=6"></script>
 </body>
 </html>

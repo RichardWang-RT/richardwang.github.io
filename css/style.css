@@ -116,7 +116,7 @@ main {
 
 .posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
     margin-bottom: 2rem;
 }
@@ -128,6 +128,7 @@ main {
     overflow: hidden;
     transition: var(--transition);
     box-shadow: var(--shadow);
+    max-width: 600px;
 }
 
 .post-card:hover {
@@ -137,6 +138,13 @@ main {
 
 .post-card-content {
     padding: 1rem;
+}
+
+.post-display {
+    min-height: 80px;
+    font-family: 'Georgia', serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 .post-card h3 {
